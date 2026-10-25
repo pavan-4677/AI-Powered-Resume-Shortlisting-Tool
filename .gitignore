@@ -1,0 +1,24 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.pytest_cache/
+
+# Local SQLite Database
+*.db
+resume_tool.db
+
+# User Uploads (keep directory structure with .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# Environment & IDE
+.env
+.vscode/
+.idea/

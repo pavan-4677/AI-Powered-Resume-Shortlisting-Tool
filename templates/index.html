@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Resume Shortlisting Tool | Recruiter Workspace</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-slate-900 sticky-top border-bottom border-slate-800">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <div class="brand-icon-wrapper">
+                    <i class="bi bi-cpu-fill text-primary"></i>
+                </div>
+                <div>
+                    <span class="brand-title">TalentAI<span class="text-primary">.Shortlist</span></span>
+                    <span class="brand-subtitle d-none d-sm-block">AI-Powered Resume Shortlisting Tool</span>
+                </div>
+            </a>
+
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <span class="badge bg-success-subtle text-success border border-success-subtle d-none d-md-inline-flex align-items-center gap-1 py-2 px-3">
+                    <i class="bi bi-shield-check"></i> 100% Local & Private Processing
+                </span>
+                <button id="btnClearAll" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 shadow-sm" title="Clear all uploaded resumes and job data">
+                    <i class="bi bi-trash3"></i>
+                    <span>Clear Workspace</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container-fluid px-4 py-4">
+        <!-- Toast Notification Container -->
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;">
+            <div id="liveToast" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div id="toastBody" class="toast-body">Notification</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ethical & Fairness Assurance Banner -->
+        <div class="alert alert-fairness d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 border">
+            <div class="d-flex align-items-center gap-3">
+                <div class="alert-icon-circle bg-primary-subtle text-primary">
+                    <i class="bi bi-award-fill fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-semibold text-slate-800">Ethical AI & Objective Screening Commitment</h6>
+                    <p class="mb-0 text-muted small">
+                        Candidates are evaluated strictly against the <strong>job requirements you provide</strong> using transparent TF-IDF semantic similarity and skills/experience alignment. Protected personal characteristics (age, gender, religion, caste, photographs) are strictly excluded. Match scores are screening guidelines to assist human recruiter review, not automated hiring decisions.
+                    </p>
+                </div>
+            </div>
+            <span class="badge bg-light text-dark border px-2 py-1 text-uppercase font-monospace small">Human-in-the-loop</span>
+        </div>
+
+        <!-- Recruiter Dashboard Metrics Summary -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="metric-card bg-white p-3 rounded-3 shadow-sm border border-slate-100 h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-muted small fw-medium text-uppercase">Resumes Analyzed</span>
+                            <h3 class="mb-0 fw-bold mt-1 text-slate-800" id="statTotalResumes">0</h3>
+                        </div>
+                        <div class="metric-icon-box bg-blue-light text-primary">
+                            <i class="bi bi-file-earmark-person fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        Uploaded candidate documents
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="metric-card bg-white p-3 rounded-3 shadow-sm border border-slate-100 h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-muted small fw-medium text-uppercase">Pending Review</span>
+                            <h3 class="mb-0 fw-bold mt-1 text-warning" id="statPendingReview">0</h3>
+                        </div>
+                        <div class="metric-icon-box bg-amber-light text-warning">
+                            <i class="bi bi-hourglass-split fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        Awaiting recruiter evaluation
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="metric-card bg-white p-3 rounded-3 shadow-sm border border-slate-100 h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-muted small fw-medium text-uppercase">Shortlisted Candidates</span>
+                            <h3 class="mb-0 fw-bold mt-1 text-success" id="statShortlisted">0</h3>
+                        </div>
+                        <div class="metric-icon-box bg-emerald-light text-success">
+                            <i class="bi bi-patch-check-fill fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        Strong match candidates (80%+)
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="metric-card bg-white p-3 rounded-3 shadow-sm border border-slate-100 h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-muted small fw-medium text-uppercase">Avg Match Score</span>
+                            <h3 class="mb-0 fw-bold mt-1 text-indigo" id="statAvgScore">0%</h3>
+                        </div>
+                        <div class="metric-icon-box bg-purple-light text-indigo">
+                            <i class="bi bi-graph-up-arrow fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        Across uploaded applicants
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Recruiter Workspace: 2 Column Layout -->
+        <div class="row g-4">
+            <!-- Left Column: Step 1 (Job Details) & Step 2 (Resume Upload) -->
+            <div class="col-12 col-lg-5">
+                <!-- Step 1: User-Provided Job Details Form -->
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold text-slate-800 d-flex align-items-center gap-2">
+                            <span class="step-badge">1</span> Enter Job Requirements
+                        </h6>
+                        <span class="small text-muted" id="jobStatusBadge">New Analysis</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Validation Alert Banner -->
+                        <div id="validationAlert" class="alert alert-warning py-2 px-3 small d-none" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="validationAlertText"></span>
+                        </div>
+
+                        <form id="jobForm">
+                            <div class="mb-3">
+                                <label for="inputJobTitle" class="form-label small fw-semibold text-slate-700">
+                                    Job Role / Job Title <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control border-slate-300 shadow-sm" id="inputJobTitle" 
+                                       placeholder="e.g. Senior Frontend Engineer, Data Scientist" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="inputJobDesc" class="form-label small fw-semibold text-slate-700">
+                                    Full Job Description (JD) <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control border-slate-300 shadow-sm" id="inputJobDesc" rows="5" 
+                                          placeholder="Paste complete job description, technical requirements, and core responsibilities..." required></textarea>
+                                <div class="form-text small">Our TF-IDF model extracts semantic keywords from this description to compare against candidate resumes.</div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-12 col-sm-8">
+                                    <label for="inputRequiredSkills" class="form-label small fw-semibold text-slate-700">
+                                        Required Skills <span class="text-muted fw-normal">(Optional, comma-separated)</span>
+                                    </label>
+                                    <input type="text" class="form-control border-slate-300 shadow-sm" id="inputRequiredSkills" 
+                                           placeholder="e.g. React, TypeScript, Redux, Node.js">
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <label for="inputMinExp" class="form-label small fw-semibold text-slate-700">
+                                        Min Exp <span class="text-muted fw-normal">(Yrs, opt)</span>
+                                    </label>
+                                    <input type="number" step="0.5" min="0" max="30" class="form-control border-slate-300 shadow-sm" 
+                                           id="inputMinExp" placeholder="e.g. 3">
+                                </div>
+                            </div>
+
+                            <div id="reanalyzeContainer" class="d-none">
+                                <button type="button" id="btnReanalyze" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-1 shadow-sm">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                    <span>Update Job Details & Re-Analyze Existing Resumes</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Step 2: Resume Upload -->
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-bold text-slate-800 d-flex align-items-center gap-2">
+                            <span class="step-badge">2</span> Upload Resumes
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Dropzone Area -->
+                        <div id="dropZone" class="upload-dropzone text-center p-4 rounded-3 border-2 border-dashed">
+                            <input type="file" id="resumeFileInput" multiple accept=".pdf,.docx" class="d-none">
+                            <div class="upload-icon-wrapper mb-2">
+                                <i class="bi bi-file-earmark-arrow-up text-primary fs-1"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1 text-slate-800">Select or Drag Candidate Resumes</h6>
+                            <p class="text-muted small mb-3">Accepts PDF and DOCX files (Up to 10MB per document)</p>
+                            <button type="button" id="btnBrowseFiles" class="btn btn-outline-primary btn-sm px-3 shadow-sm">
+                                <i class="bi bi-folder2-open me-1"></i> Browse Files
+                            </button>
+                        </div>
+
+                        <!-- Selected files list -->
+                        <div id="selectedFilesContainer" class="mt-3 d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-semibold text-slate-700" id="selectedFileCount">0 files selected</span>
+                                <button id="btnClearFiles" class="btn btn-link btn-sm text-danger p-0 text-decoration-none">Clear Selection</button>
+                            </div>
+                            <ul id="selectedFilesList" class="list-group list-group-flush small border rounded-2 max-h-180 overflow-y-auto"></ul>
+                        </div>
+
+                        <!-- Upload / Analyze Progress Bar -->
+                        <div id="uploadProgressContainer" class="mt-3 d-none">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span id="uploadProgressLabel">Processing & extracting resumes...</span>
+                                <span id="uploadProgressText">0%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Primary Action Button: Step 3 Analyze Resumes -->
+                        <button id="btnStartAnalyze" class="btn btn-primary w-100 mt-3 py-2 d-flex align-items-center justify-content-center gap-2 shadow fw-semibold">
+                            <i class="bi bi-cpu fs-5"></i>
+                            <span id="btnStartAnalyzeText">Analyze Resumes</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results Dashboard & Ranked Candidate Table -->
+            <div class="col-12 col-lg-7">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <div class="row align-items-center gy-2">
+                            <div class="col-12 col-md-6">
+                                <h6 class="mb-0 fw-bold text-slate-800 d-flex align-items-center gap-2">
+                                    <i class="bi bi-trophy-fill text-amber"></i> Candidate Shortlist
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2" id="rankingCountBadge">0</span>
+                                </h6>
+                            </div>
+                            <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
+                                <button id="btnExportCSV" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 shadow-sm" disabled>
+                                    <i class="bi bi-download"></i>
+                                    <span>Export CSV</span>
+                                </button>
+                                <button id="btnRefreshRankings" class="btn btn-light btn-sm border d-flex align-items-center gap-1 shadow-sm" title="Refresh">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search and Filter Toolbar -->
+                    <div class="card-body border-bottom bg-slate-50 py-3">
+                        <div class="row g-2 align-items-center">
+                            <!-- Keyword Search -->
+                            <div class="col-12 col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-slate-300 text-muted">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" id="filterSearch" class="form-control border-slate-300" placeholder="Filter by name, filename, skill...">
+                                </div>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="col-6 col-md-3">
+                                <select id="filterStatus" class="form-select form-select-sm border-slate-300">
+                                    <option value="all">All Review Statuses</option>
+                                    <option value="Shortlisted">Shortlisted</option>
+                                    <option value="Under Review">Under Review</option>
+                                    <option value="Interviewing">Interview Scheduled</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+
+                            <!-- Min Score Range Slider -->
+                            <div class="col-6 col-md-5">
+                                <div class="d-flex align-items-center gap-2 bg-white px-3 py-1 rounded-2 border border-slate-300">
+                                    <span class="small text-muted fw-semibold text-nowrap">Min Score:</span>
+                                    <input type="range" class="form-range" id="filterMinScore" min="0" max="95" step="5" value="0">
+                                    <span class="badge bg-primary-subtle text-primary font-monospace" id="minScoreLabel">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Candidate Ranking Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="candidatesTable">
+                            <thead class="table-light small text-uppercase text-muted">
+                                <tr>
+                                    <th scope="col" style="width: 50px;" class="ps-3">Rank</th>
+                                    <th scope="col">Candidate & Resume</th>
+                                    <th scope="col" style="width: 130px;">Match Score</th>
+                                    <th scope="col">Skills & Experience</th>
+                                    <th scope="col" style="width: 120px;">Status</th>
+                                    <th scope="col" style="width: 100px;" class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidatesTableBody">
+                                <!-- Clean Empty State (Populated by app.js) -->
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-file-earmark-text fs-1 d-block mb-2 text-slate-300"></i>
+                                        <h6 class="fw-semibold text-slate-700">No resumes uploaded yet.</h6>
+                                        <p class="small text-muted mb-0">Enter your job requirements on the left, upload candidate resumes, and click "Analyze Resumes".</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Screening Guideline Legend Footer -->
+                    <div class="card-footer bg-white border-top py-2 px-3 small text-muted d-flex flex-wrap justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="fw-semibold text-slate-700">Screening Guidelines:</span>
+                            <span><span class="tier-indicator-dot bg-success"></span> 80–100%: Strong match</span>
+                            <span><span class="tier-indicator-dot bg-warning"></span> 60–79%: Moderate match</span>
+                            <span><span class="tier-indicator-dot bg-danger"></span> Below 60%: Lower match</span>
+                        </div>
+                        <span class="text-muted fst-italic" style="font-size: 0.75rem;">Advisory screening guidelines for recruiter review</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Candidate Detailed Analysis Modal -->
+    <div class="modal fade" id="candidateModal" tabindex="-1" aria-labelledby="candidateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-slate-900 text-white py-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="candidate-avatar" id="modalCandidateAvatar">--</div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="modalCandidateName">Candidate Name</h5>
+                            <span class="small text-slate-400" id="modalCandidateContact">email@example.com | Filename</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Match Score Summary Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-3">
+                            <div class="score-breakdown-card p-3 rounded-3 text-center bg-light border">
+                                <span class="small text-muted fw-semibold text-uppercase">Overall Match</span>
+                                <h2 class="fw-bold my-1 text-primary" id="modalOverallScore">0%</h2>
+                                <span class="badge" id="modalMatchBadge">Guideline</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="score-breakdown-card p-3 rounded-3 text-center bg-light border">
+                                <span class="small text-muted fw-semibold text-uppercase">Skills Alignment (35%)</span>
+                                <h3 class="fw-bold my-1 text-emerald" id="modalSkillScore">0%</h3>
+                                <span class="small text-muted" id="modalSkillCount">0 matched</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="score-breakdown-card p-3 rounded-3 text-center bg-light border">
+                                <span class="small text-muted fw-semibold text-uppercase">Semantic Similarity (35%)</span>
+                                <h3 class="fw-bold my-1 text-indigo" id="modalSemanticScore">0%</h3>
+                                <span class="small text-muted" id="modalCosineRaw">TF-IDF Cosine Match</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="score-breakdown-card p-3 rounded-3 text-center bg-light border">
+                                <span class="small text-muted fw-semibold text-uppercase">Experience & Qualifications (30%)</span>
+                                <h3 class="fw-bold my-1 text-slate-700" id="modalExpScore">0%</h3>
+                                <span class="small text-muted" id="modalExpYears">Experience alignment</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Evidence & Match Reasons Supporting the Score -->
+                    <div class="card border border-slate-200 rounded-3 mb-4">
+                        <div class="card-header bg-white py-2 fw-semibold text-slate-800 d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-check text-primary"></i> Supporting Evidence & Score Breakdown
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0 ps-3 text-slate-700 small" id="modalMatchReasonsList">
+                                <!-- Populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Skills Deep Dive: Matched vs Missing -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <div class="card h-100 border-success-subtle bg-success-subtle/10 rounded-3">
+                                <div class="card-header bg-white py-2 text-success fw-semibold d-flex align-items-center gap-2">
+                                    <i class="bi bi-check-circle-fill"></i> Matched Required Skills
+                                </div>
+                                <div class="card-body">
+                                    <div id="modalMatchedSkillsPills" class="d-flex flex-wrap gap-2">
+                                        <!-- Matched pills -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="card h-100 border-danger-subtle bg-danger-subtle/10 rounded-3">
+                                <div class="card-header bg-white py-2 text-danger fw-semibold d-flex align-items-center gap-2">
+                                    <i class="bi bi-x-circle-fill"></i> Missing Required Skills
+                                </div>
+                                <div class="card-body">
+                                    <div id="modalMissingSkillsPills" class="d-flex flex-wrap gap-2">
+                                        <!-- Missing pills -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Extracted Profile Tabs (Education, Experience, Projects, Raw Text) -->
+                    <ul class="nav nav-tabs mb-3" id="candidateTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">Education & Projects</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="allskills-tab" data-bs-toggle="tab" data-bs-target="#tab-allskills" type="button" role="tab">All Identified Skills</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="rawtext-tab" data-bs-toggle="tab" data-bs-target="#tab-rawtext" type="button" role="tab">Extracted Text</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="candidateTabsContent">
+                        <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <h6 class="fw-bold text-slate-800 small text-uppercase mb-2"><i class="bi bi-mortarboard me-1 text-primary"></i> Education Detected</h6>
+                                    <div id="modalEducationList" class="small text-muted border rounded-2 p-3 bg-light min-h-120">
+                                        <!-- Education -->
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <h6 class="fw-bold text-slate-800 small text-uppercase mb-2"><i class="bi bi-kanban me-1 text-primary"></i> Projects Detected</h6>
+                                    <div id="modalProjectsList" class="small text-muted border rounded-2 p-3 bg-light min-h-120">
+                                        <!-- Projects -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-allskills" role="tabpanel">
+                            <div id="modalAllCandidateSkills" class="d-flex flex-wrap gap-1 p-3 border rounded-2 bg-light">
+                                <!-- Skills -->
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-rawtext" role="tabpanel">
+                            <pre id="modalRawText" class="p-3 border rounded-2 bg-slate-900 text-slate-200 small font-monospace raw-text-box"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Recruiter Action & Review Decision Section -->
+                    <div class="card border border-primary-subtle bg-blue-subtle/10 rounded-3 mt-4">
+                        <div class="card-header bg-white py-2 fw-semibold text-slate-800 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-pencil-square text-primary me-1"></i> Recruiter Human Review Decision</span>
+                            <span class="small text-muted" id="modalReviewedAt"></span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small fw-semibold text-muted">Review Decision:</label>
+                                    <select id="modalStatusSelect" class="form-select border-slate-300">
+                                        <option value="Under Review">Under Review</option>
+                                        <option value="Shortlisted">Shortlisted</option>
+                                        <option value="Interviewing">Interview Scheduled</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small fw-semibold text-muted">Recruiter Notes:</label>
+                                    <textarea id="modalRecruiterNotes" rows="2" class="form-control border-slate-300" placeholder="Add specific recruiter review notes..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <a id="modalDownloadResumeBtn" href="#" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Download Original File
+                    </a>
+                    <button type="button" id="btnSaveRecruiterDecision" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-check2-circle"></i> Save Review & Decision
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Recruiter Application Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
